@@ -73,6 +73,7 @@
                                     <th>Места</th>
                                     <th>Стоимость</th>
                                     <th>Статус</th>
+                                    <th>Действия</th>  <!-- НОВЫЙ СТОЛБЕЦ -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -92,6 +93,12 @@
                                         {% else %}
                                             <span class="badge bg-warning">Ожидание</span>
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <!-- КНОПКА ОТМЕНЫ -->
+                                        <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-sm btn-outline-danger">
+                                            Отменить
+                                        </a>
                                     </td>
                                 </tr>
                                 {% endfor %}

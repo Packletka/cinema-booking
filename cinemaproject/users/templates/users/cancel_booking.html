@@ -1,0 +1,58 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Отмена брони - Кинокасса{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="text-center mb-0">Отмена бронирования</h3>
+                </div>
+                <div class="card-body p-4 text-center">
+                    {% if can_cancel %}
+                    <div class="mb-4">
+                        <span style="font-size: 3rem;">⚠️</span>
+                    </div>
+                    
+                    <h5>Вы уверены, что хотите отменить бронь?</h5>
+                    
+                    <div class="booking-details mt-4 p-3 bg-light rounded">
+                        <p><strong>Фильм:</strong> {{ booking.session.movie.title }}</p>
+                        <p><strong>Дата и время:</strong> {{ booking.session.start_time|date:"d M Y H:i" }}</p>
+                        <p><strong>Зал:</strong> {{ booking.session.hall.name }}</p>
+                        <p><strong>Количество мест:</strong> {{ booking.seats_count }}</p>
+                        <p><strong>Стоимость:</strong> {{ booking.total_price }} руб.</p>
+                    </div>
+
+                    <form method="POST" class="mt-4">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg">Да, отменить бронь</button>
+                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-lg">Вернуться назад</a>
+                    </form>
+                    {% else %}
+                    <div class="mb-4">
+                        <span style="font-size: 3rem;">🚫</span>
+                    </div>
+                    
+                    <h5 class="text-danger">Невозможно отменить бронь</h5>
+                    <p>{{ cancellation_message }}</p>
+                    
+                    <div class="booking-details mt-4 p-3 bg-light rounded">
+                        <p><strong>Фильм:</strong> {{ booking.session.movie.title }}</p>
+                        <p><strong>Дата и время:</strong> {{ booking.session.start_time|date:"d M Y H:i" }}</p>
+                        <p><strong>Зал:</strong> {{ booking.session.hall.name }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{% url 'profile' %}" class="btn btn-primary btn-lg">Вернуться в профиль</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
