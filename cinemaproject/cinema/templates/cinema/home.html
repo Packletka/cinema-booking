@@ -1,0 +1,114 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Главная - Кинокасса{% endblock %}
+
+{% block content %}
+<!-- Герой секция -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Добро пожаловать в Кинокассу</h1>
+        <p class="hero-subtitle">Бронируйте билеты в кино онлайн быстро и удобно</p>
+        <a href="{% url 'movie_list' %}" class="btn btn-danger btn-lg">Смотреть фильмы</a>
+    </div>
+</section>
+
+<!-- Секция с популярными фильмами -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 section-title">Сейчас в кино</h2>
+        <div class="row">
+            {% for movie in movies|slice:":4" %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card movie-card h-100">
+                    <div class="movie-poster">
+                        {% if movie.poster %}
+                            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+                        {% else %}
+                            <span>Постер отсутствует</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ movie.title }}</h5>
+                        <p class="card-text"><small class="text-muted">{{ movie.genre }} • {{ movie.duration }} мин</small></p>
+                        <div class="rating">★ {{ movie.rating }}/10</div>
+                        <a href="{% url 'movie_detail' movie.id %}" class="btn btn-outline-danger btn-sm mt-2">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>Фильмы появятся скоро</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'movie_list' %}" class="btn btn-outline-primary">Все фильмы</a>
+        </div>
+    </div>
+</section>
+
+<!-- Секция с ближайшими сеансами -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 section-title">Ближайшие сеансы</h2>
+        <div class="row">
+            {% for session in sessions|slice:":3" %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card session-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ session.movie.title }}</h5>
+                        <p class="card-text">
+                            <strong>Время:</strong> {{ session.start_time|date:"d M H:i" }}<br>
+                            <strong>Зал:</strong> {{ session.hall.name }}<br>
+                            <strong>Цена:</strong> {{ session.price }} руб.
+                        </p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'booking' session.id %}" class="btn btn-danger">Забронировать</a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-outline-danger">Войти для бронирования</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p>Ближайшие сеансы появятся скоро</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'session_list' %}" class="btn btn-outline-primary">Все сеансы</a>
+        </div>
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon">
+                    <h3>🎯</h3>
+                </div>
+                <h4>Быстрое бронирование</h4>
+                <p>Забронируйте билеты за несколько кликов</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon">
+                    <h3>💺</h3>
+                </div>
+                <h4>Лучшие места</h4>
+                <p>Выбирайте удобные места в зале</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="feature-icon">
+                    <h3>📱</h3>
+                </div>
+                <h4>Удобно и просто</h4>
+                <p>Бронируйте с любого устройства</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

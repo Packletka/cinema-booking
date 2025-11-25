@@ -1,0 +1,37 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Все сеансы - Кинокасса{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5 section-title">Все сеансы</h1>
+
+    <div class="row">
+        {% for session in sessions %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card session-card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ session.movie.title }}</h5>
+                    <p class="card-text">
+                        <strong>Дата и время:</strong> {{ session.start_time|date:"d M Y H:i" }}<br>
+                        <strong>Зал:</strong> {{ session.hall.name }}<br>
+                        <strong>Цена:</strong> {{ session.price }} руб.<br>
+                        <strong>Доступно мест:</strong> {{ session.hall.capacity }}
+                    </p>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'booking' session.id %}" class="btn btn-danger">Забронировать</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-danger">Войти для бронирования</a>
+                    {% endif %}
+                </div>
+             </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p>Сеансы не найдены.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

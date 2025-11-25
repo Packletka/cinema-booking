@@ -1,0 +1,48 @@
+/* Специфические стили для пользовательских страниц */
+
+/* Страница входа и регистрации */
+.login-container, .register-container {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.auth-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.auth-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.5rem;
+}
+
+/* Аватар пользователя */
+.avatar-placeholder {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+/* Статистика в профиле */
+.stats-card {
+    transition: transform 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Таблица истории */
+.table-hover tbody tr:hover {
+    background-color: rgba(229, 9, 20, 0.05);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .auth-card {
+        margin: 1rem;
+    }
+
+    .stats-card .card-body {
+        padding: 1rem 0.5rem;
+    }
+}

@@ -1,0 +1,64 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Бронирование - {{ session.movie.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="booking-form">
+                <h1 class="text-center mb-4">Бронирование билетов</h1>
+
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ session.movie.title }}</h5>
+                        <p class="card-text">
+                            <strong>Дата и время:</strong> {{ session.start_time|date:"d M Y H:i" }}<br>
+                            <strong>Зал:</strong> {{ session.hall.name }}<br>
+                            <strong>Цена за место:</strong> <span id="price-per-seat">{{ session.price }}</span> руб.
+                        </p>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                    <form method="POST" id="booking-form">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="seats" class="form-label">Количество мест</label>
+                            <input type="number" class="form-control" id="seats" name="seats" min="1" max="10" value="1" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Общая стоимость</label>
+                            <div class="h4 text-danger" id="total-price">{{ session.price }}</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger btn-lg w-100">Забронировать</button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-warning text-center">
+                        <p>Для бронирования билетов необходимо <a href="{% url 'login' %}">войти</a> или <a href="{% url 'register' %}">зарегистрироваться</a>.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const seatInput = document.getElementById('seats');
+        const priceDisplay = document.getElementById('total-price');
+        const pricePerSeat = parseFloat(document.getElementById('price-per-seat').textContent);
+
+        seatInput.addEventListener('input', function() {
+            const seats = parseInt(this.value) || 0;
+            const total = seats * pricePerSeat;
+            priceDisplay.textContent = total.toFixed(2);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}{{ movie.title }} - Кинокасса{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="movie-poster mb-4">
+                {% if movie.poster %}
+                    <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="img-fluid rounded">
+                {% else %}
+                    <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+                        <span>Постер отсутствует</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <h1 class="mb-3">{{ movie.title }}</h1>
+            <p class="lead">{{ movie.description }}</p>
+            <div class="mb-3">
+                <strong>Жанр:</strong> {{ movie.genre }}<br>
+                <strong>Продолжительность:</strong> {{ movie.duration }} минут<br>
+                <strong>Рейтинг:</strong> <span class="rating">★ {{ movie.rating }}/10</span>
+            </div>
+
+            {% if movie.trailer_url %}
+            <div class="mb-4">
+                <a href="{{ movie.trailer_url }}" target="_blank" class="btn btn-outline-danger">Смотреть трейлер</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Сеансы для этого фильма -->
+    <div class="mt-5">
+        <h2 class="section-title">Сеансы</h2>
+        {% if sessions %}
+            <div class="row">
+                {% for session in sessions %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Зал: {{ session.hall.name }}</h5>
+                            <p class="card-text">
+                                <strong>Дата и время:</strong> {{ session.start_time|date:"d M Y H:i" }}<br>
+                                <strong>Цена:</strong> {{ session.price }} руб.
+                            </p>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'booking' session.id %}" class="btn btn-danger">Забронировать</a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-outline-danger">Войти для бронирования</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>На данный момент сеансов для этого фильма нет.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

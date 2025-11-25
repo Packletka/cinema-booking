@@ -1,0 +1,79 @@
+{% extends 'cinema/base.html' %}
+{% load static %}
+
+{% block title %}Все фильмы - Кинокасса{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-5 section-title">Все фильмы</h1>
+
+    <!-- Фильтры по жанрам -->
+    <div class="text-center mb-4">
+        <button class="btn btn-outline-secondary filter-btn active" data-genre="all">Все</button>
+        {% for genre in genres %}
+            <button class="btn btn-outline-secondary filter-btn" data-genre="{{ genre }}">{{ genre }}</button>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+        {% for movie in movies %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4 movie-card" data-genre="{{ movie.genre }}">
+            <div class="card h-100">
+                <div class="movie-poster">
+                    {% if movie.poster %}
+                        <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+                    {% else %}
+                        <span>Постер отсутствует</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ movie.title }}</h5>
+                    <p class="card-text">{{ movie.description|truncatewords:20 }}</p>
+                    <p class="card-text"><small class="text-muted">{{ movie.genre }} • {{ movie.duration }} мин</small></p>
+                    <div class="rating">★ {{ movie.rating }}/10</div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'movie_detail' movie.id %}" class="btn btn-danger w-100">Подробнее</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p>Фильмы не найдены.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Активируем фильтрацию фильмов по жанрам
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const genre = this.getAttribute('data-genre');
+                filterMovies(genre);
+
+                // Обновляем активную кнопку
+                filterButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        function filterMovies(genre) {
+            const movies = document.querySelectorAll('.movie-card');
+
+            movies.forEach(movie => {
+                if (genre === 'all' || movie.getAttribute('data-genre') === genre) {
+                    movie.style.display = 'block';
+                } else {
+                    movie.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
