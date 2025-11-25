@@ -18,14 +18,16 @@
     <div class="container">
         <h2 class="text-center mb-5 section-title">Сейчас в кино</h2>
         <div class="row">
-            {% for movie in movies|slice:":4" %}
+            {% for movie in movies %}
             <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                 <div class="card movie-card h-100">
                     <div class="movie-poster">
                         {% if movie.poster %}
-                            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}">
+                            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="img-fluid">
                         {% else %}
-                            <span>Постер отсутствует</span>
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center h-100">
+                                <span>Постер отсутствует</span>
+                            </div>
                         {% endif %}
                     </div>
                     <div class="card-body">
@@ -42,9 +44,11 @@
             </div>
             {% endfor %}
         </div>
+        {% if movies %}
         <div class="text-center mt-4">
             <a href="{% url 'movie_list' %}" class="btn btn-outline-primary">Все фильмы</a>
         </div>
+        {% endif %}
     </div>
 </section>
 
@@ -53,7 +57,7 @@
     <div class="container">
         <h2 class="text-center mb-5 section-title">Ближайшие сеансы</h2>
         <div class="row">
-            {% for session in sessions|slice:":3" %}
+            {% for session in sessions %}
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card session-card h-100">
                     <div class="card-body">
@@ -77,9 +81,11 @@
             </div>
             {% endfor %}
         </div>
+        {% if sessions %}
         <div class="text-center mt-4">
             <a href="{% url 'session_list' %}" class="btn btn-outline-primary">Все сеансы</a>
         </div>
+        {% endif %}
     </div>
 </section>
 

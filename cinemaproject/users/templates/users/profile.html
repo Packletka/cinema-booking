@@ -34,7 +34,7 @@
                 <div class="col-md-4">
                     <div class="card text-center bg-primary text-white">
                         <div class="card-body">
-                            <h5 class="card-title">{{ user.booking_set.count }}</h5>
+                            <h5 class="card-title">{{ total_bookings }}</h5>
                             <p class="card-text">Всего броней</p>
                         </div>
                     </div>
@@ -42,7 +42,7 @@
                 <div class="col-md-4">
                     <div class="card text-center bg-success text-white">
                         <div class="card-body">
-                            <h5 class="card-title">{{ user.booking_set.filter.is_confirmed.count }}</h5>
+                            <h5 class="card-title">{{ confirmed_bookings }}</h5>
                             <p class="card-text">Подтвержденных</p>
                         </div>
                     </div>
@@ -50,11 +50,7 @@
                 <div class="col-md-4">
                     <div class="card text-center bg-info text-white">
                         <div class="card-body">
-                            <h5 class="card-title">
-                                {% with total=user.booking_set.all %}
-                                    {{ total|length }}
-                                {% endwith %}
-                            </h5>
+                            <h5 class="card-title">{{ total_tickets }}</h5>
                             <p class="card-text">Всего билетов</p>
                         </div>
                     </div>
@@ -67,7 +63,7 @@
                     <h5 class="mb-0">История бронирований</h5>
                 </div>
                 <div class="card-body">
-                    {% if user.booking_set.all %}
+                    {% if bookings %}
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
@@ -80,7 +76,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for booking in user.booking_set.all %}
+                                {% for booking in bookings %}
                                 <tr>
                                     <td>
                                         <strong>{{ booking.session.movie.title }}</strong>

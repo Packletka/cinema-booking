@@ -2,10 +2,21 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Movie, Session, Booking
+from django.utils import timezone
 
 
 def home(request):
-    return render(request, 'cinema/home.html')
+    # Получаем 4 последних фильма
+    movies = Movie.objects.all().order_by('-id')[:4]
+
+    # Получаем ближайшие 3 сеанса (будущие сеансы)
+    now = timezone.now()
+    sessions = Session.objects.filter(start_time__gte=now).order_by('start_time')[:3]
+
+    return render(request, 'cinema/home.html', {
+        'movies': movies,
+        'sessions': sessions
+    })
 
 
 def movie_list(request):
