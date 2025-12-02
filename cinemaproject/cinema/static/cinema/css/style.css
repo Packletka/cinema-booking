@@ -316,3 +316,161 @@ footer a:hover {
     margin-bottom: 1rem;
     opacity: 0.5;
 }
+
+/* Стили для схемы кинозала */
+.cinema-hall {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 0;
+}
+
+.screen-container {
+    perspective: 1000px;
+}
+
+.screen {
+    width: 80%;
+    max-width: 600px;
+    margin: 0 auto;
+    transform: rotateX(30deg);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    border-bottom: 3px solid #ffc107;
+}
+
+/* Стили для мест */
+.seat-wrapper {
+    position: relative;
+    margin: 5px;
+    display: inline-block;
+}
+
+.seat {
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+    margin: 3px;
+    border-radius: 8px;
+    text-align: center;
+    line-height: 45px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.seat.free {
+    background: #28a745;
+    color: white;
+    cursor: pointer !important;
+}
+
+.seat.free:hover {
+    background: #218838;
+    transform: scale(1.1);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+}
+
+.seat.selected {
+    background-color: #007bff !important;
+    color: white !important;
+    border: 2px solid #0056b3 !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.5);
+    cursor: pointer !important;
+}
+
+.seat.occupied {
+    background: #dc3545;
+    color: white;
+    cursor: not-allowed;
+    opacity: 0.7;
+    position: relative;
+}
+
+.seat.occupied:after {
+    content: "✗";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: white;
+}
+
+/* VIP места */
+.seat-wrapper:nth-child(-n+3) .seat {
+    background: #6f42c1;
+}
+
+.seat-wrapper:nth-child(-n+3) .seat.free {
+    background: linear-gradient(135deg, #6f42c1, #e83e8c);
+}
+
+.seat-wrapper:nth-child(-n+3) .seat.selected {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+}
+
+.vip-badge {
+    position: absolute;
+    top: -10px;
+    right: -5px;
+    background: #ffc107;
+    color: #000;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+/* Легенда */
+.seat-legend {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.seat-legend.free { background: #28a745; }
+.seat-legend.selected { background: #007bff; }
+.seat-legend.occupied { background: #dc3545; }
+.seat-legend.vip { background: linear-gradient(135deg, #6f42c1, #e83e8c); }
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .seat {
+        width: 35px;
+        height: 35px;
+        line-height: 35px;
+        font-size: 0.8rem;
+    }
+
+    .row-label {
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .seats-map {
+        overflow-x: auto;
+    }
+}
+
+.seat.selected {
+    animation: pulse 2s infinite;
+}
+
+/* Анимация для выбранных мест */
+@keyframes pulse {
+    0% { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 123, 255, 0.7); }
+    50% { transform: scale(1.15); box-shadow: 0 0 25px rgba(0, 123, 255, 0.9); }
+    100% { transform: scale(1.1); box-shadow: 0 0 20px rgba(0, 123, 255, 0.7); }
+}
+
+/* Убедимся, что места не перекрываются другими элементами */
+.seat-wrapper {
+    position: relative;
+    z-index: 10;
+}

@@ -1,46 +1,162 @@
 {% extends 'cinema/base.html' %}
 {% load static %}
+{% load cinema_extras %}
 
-{% block title %}Бронирование - {{ session.movie.title }}{% endblock %}
+{% block title %}Бронирование мест - {{ session.movie.title }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="booking-form">
-                <h1 class="text-center mb-4">Бронирование билетов</h1>
-
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ session.movie.title }}</h5>
-                        <p class="card-text">
-                            <strong>Дата и время:</strong> {{ session.start_time|date:"d M Y H:i" }}<br>
-                            <strong>Зал:</strong> {{ session.hall.name }}<br>
-                            <strong>Цена за место:</strong> <span id="price-per-seat">{{ session.price }}</span> руб.
-                        </p>
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Информация о сеансе -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="card-title">{{ session.movie.title }}</h2>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong>Дата и время:</strong> {{ session.start_time|date:"d.m.Y H:i" }}</p>
+                            <p><strong>Зал:</strong> {{ hall.name }}</p>
+                            <p><strong>Продолжительность:</strong> {{ session.movie.duration }} мин.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Цена за место:</strong> <span class="text-danger h5">{{ session.price }} руб.</span></p>
+                            <p><strong>Вместимость зала:</strong> {{ hall.capacity }} мест</p>
+                            <p><strong>Рядов:</strong> {{ hall.rows }}, <strong>Мест в ряду:</strong> {{ hall.seats_per_row }}</p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                {% if user.is_authenticated %}
+            <!-- Схема зала -->
+            <div class="cinema-hall card">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Выбор мест - Зал {{ hall.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Экран -->
+                    <div class="screen-container text-center mb-5">
+                        <div class="screen bg-secondary text-white py-3 rounded">
+                            <h5 class="mb-0">ЭКРАН</h5>
+                        </div>
+<!--                        <div class="mt-2">-->
+<!--                            <small class="text-muted">Направление взгляда →</small>-->
+<!--                        </div>-->
+                    </div>
+
+                    <!-- Легенда -->
+                    <div class="legend mb-4">
+                        <h5>Обозначения:</h5>
+                        <div class="d-flex flex-wrap gap-4">
+                            <div class="d-flex align-items-center">
+                                <div class="seat-legend free me-2"></div>
+                                <span>Свободно</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="seat-legend selected me-2"></div>
+                                <span>Выбрано</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="seat-legend occupied me-2"></div>
+                                <span>Занято</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="seat-legend vip me-2"></div>
+                                <span>VIP</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Схема мест -->
                     <form method="POST" id="booking-form">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="seats" class="form-label">Количество мест</label>
-                            <input type="number" class="form-control" id="seats" name="seats" min="1" max="10" value="1" required>
+
+                        <input type="hidden" id="price-per-seat" value="{{ price }}">
+
+                        <div class="seats-map text-center">
+                            {% for row in rows %}
+                            <div class="row mb-3 justify-content-center">
+                                <div class="col-auto">
+                                    <div class="row-label d-inline-block me-3">
+                                        <span class="badge bg-dark">Ряд {{ row }}</span>
+                                    </div>
+
+                                    {% for seat in seats_by_row|get_item:row %}
+                                    <div class="seat-wrapper d-inline-block position-relative">
+                                        <input type="checkbox"
+                                               name="seats"
+                                               value="{{ seat.id }}"
+                                               id="seat-{{ seat.id }}"
+                                               class="seat-checkbox visually-hidden"
+                                               {% if seat.is_booked %}disabled{% endif %}
+                                               data-row="{{ row }}"
+                                               data-number="{{ seat.number }}"
+                                               data-price="{{ price }}">
+                                        <label for="seat-{{ seat.id }}"
+                                               class="seat {% if seat.is_booked %}occupied{% else %}free{% endif %}"
+                                               data-seat-id="{{ seat.id }}">
+                                            {{ seat.number }}
+                                        </label>
+                                        {% if row <= 3 %}
+                                        <span class="vip-badge">VIP</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Общая стоимость</label>
-                            <div class="h4 text-danger" id="total-price">{{ session.price }}</div>
+                        <!-- Информация о выборе -->
+                        <div class="booking-summary mt-5">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5>Выбранные места:</h5>
+                                            <div id="selected-seats-list" class="mb-3">
+                                                <p class="text-muted">Нет выбранных мест</p>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <strong>Выбрано мест:</strong>
+                                                <span id="selected-count">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5>Стоимость:</h5>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Цена за место:</span>
+                                                <span>{{ price }} руб.</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Количество мест:</span>
+                                                <span id="quantity">0</span>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between">
+                                                <strong>Итого:</strong>
+                                                <strong><span id="total-price">0</span> руб.</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-danger btn-lg w-100">Забронировать</button>
+                        <!-- Кнопки -->
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-danger btn-lg px-5" id="book-button" disabled>
+                                <i class="fas fa-ticket-alt me-2"></i>Забронировать выбранные места
+                            </button>
+                            <a href="{% url 'session_list' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="fas fa-arrow-left me-2"></i>Назад к сеансам
+                            </a>
+                        </div>
                     </form>
-                {% else %}
-                    <div class="alert alert-warning text-center">
-                        <p>Для бронирования билетов необходимо <a href="{% url 'login' %}">войти</a> или <a href="{% url 'register' %}">зарегистрироваться</a>.</p>
-                    </div>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -49,16 +165,146 @@
 
 {% block extra_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const seatInput = document.getElementById('seats');
-        const priceDisplay = document.getElementById('total-price');
-        const pricePerSeat = parseFloat(document.getElementById('price-per-seat').textContent);
+// Отключаем конфликтующий код из main.js
+document.addEventListener('DOMContentLoaded', function() {
+    // Переопределяем проблемную функцию
+    if (typeof initBookingSystem === 'function') {
+        window.originalInitBookingSystem = initBookingSystem;
+        initBookingSystem = function() {
+            console.log('Booking system disabled for this page');
+        };
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== ИНИЦИАЛИЗАЦИЯ ВЫБОРА МЕСТ ===');
 
-        seatInput.addEventListener('input', function() {
-            const seats = parseInt(this.value) || 0;
-            const total = seats * pricePerSeat;
-            priceDisplay.textContent = total.toFixed(2);
+    const pricePerSeat = Number("{{ price|stringformat:'f' }}".replace(',', '.'));
+    const selectedSeats = new Set();
+
+    // Правильные селекторы
+    const selectedCount = document.getElementById('selected-count');
+    const quantity = document.getElementById('quantity');
+    const totalPrice = document.getElementById('total-price');
+    const bookButton = document.getElementById('book-button');
+    const selectedSeatsList = document.getElementById('selected-seats-list');
+    const bookingForm = document.getElementById('booking-form');
+
+    // Функция обновления информации о выборе
+    function updateBookingInfo() {
+        const count = selectedSeats.size;
+        const total = count * pricePerSeat;
+
+        // Обновляем счетчики
+        selectedCount.textContent = count;
+        quantity.textContent = count;
+        totalPrice.textContent = total.toFixed(2);
+
+        // Активируем/деактивируем кнопку
+        bookButton.disabled = count === 0;
+
+        // Обновляем список выбранных мест
+        if (count === 0) {
+            selectedSeatsList.innerHTML = '<p class="text-muted">Нет выбранных мест</p>';
+        } else {
+            let list = '<ul class="list-unstyled">';
+            selectedSeats.forEach(seatId => {
+                const checkbox = document.getElementById(`seat-${seatId}`);
+                if (checkbox) {
+                    const row = checkbox.getAttribute('data-row');
+                    const number = checkbox.getAttribute('data-number');
+                    list += `<li>Ряд ${row}, место ${number}</li>`;
+                }
+            });
+            list += '</ul>';
+            selectedSeatsList.innerHTML = list;
+        }
+
+        console.log('Обновлено: выбрано мест =', count, ', сумма =', total);
+    }
+
+    // Обработчик клика по местам
+    function handleSeatClick(e) {
+        const seat = e.currentTarget;
+
+        // Пропускаем занятые места
+        if (seat.classList.contains('occupied')) {
+            console.log('Место занято, клик проигнорирован');
+            return;
+        }
+
+        const seatId = seat.getAttribute('data-seat-id');
+        const checkbox = document.getElementById(`seat-${seatId}`);
+
+        if (seat.classList.contains('selected')) {
+            // Снимаем выбор
+            seat.classList.remove('selected');
+            seat.classList.add('free');
+            if (checkbox) checkbox.checked = false;
+            selectedSeats.delete(seatId);
+            console.log('Снят выбор с места:', seatId);
+        } else {
+            // Выбираем место
+            seat.classList.remove('free');
+            seat.classList.add('selected');
+            if (checkbox) checkbox.checked = true;
+            selectedSeats.add(seatId);
+            console.log('Выбрано место:', seatId);
+        }
+
+        updateBookingInfo();
+    }
+
+    // Инициализация - назначение обработчиков для всех мест
+    function initSeatSelection() {
+        const allSeats = document.querySelectorAll('.seat');
+        console.log('Найдено мест на странице:', allSeats.length);
+
+        allSeats.forEach(seat => {
+            // Только свободные места делаем кликабельными
+            if (seat.classList.contains('free')) {
+                seat.addEventListener('click', handleSeatClick);
+                seat.style.cursor = 'pointer';
+                seat.title = 'Нажмите для выбора места';
+            } else if (seat.classList.contains('occupied')) {
+                seat.style.cursor = 'not-allowed';
+                seat.title = 'Место уже занято';
+            }
         });
+
+        // Также можно добавить делегирование событий на контейнер
+        const seatsContainer = document.querySelector('.seats-map');
+        if (seatsContainer) {
+            seatsContainer.addEventListener('click', function(e) {
+                const seat = e.target.closest('.seat');
+                if (seat && seat.classList.contains('free')) {
+                    handleSeatClick({currentTarget: seat});
+                }
+            });
+        }
+    }
+
+    // Обработка отправки формы
+    bookingForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Сначала предотвратим отправку
+
+        const selectedSeatIds = Array.from(selectedSeats);
+        console.log('Отправляемые ID мест:', selectedSeatIds);
+
+        // Проверяем чекбоксы
+        const checkboxes = document.querySelectorAll('input[name="seats"]:checked');
+        console.log('Чекбоксы:', checkboxes.length);
+        checkboxes.forEach(cb => console.log('Чекбокс value:', cb.value, 'type:', typeof cb.value));
+
+        // Теперь отправляем форму
+        this.submit();
     });
+
+    // Инициализация
+    initSeatSelection();
+    updateBookingInfo();
+    console.log('Выбор мест инициализирован');
+});
 </script>
 {% endblock %}

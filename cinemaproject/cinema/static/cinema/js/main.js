@@ -5,10 +5,23 @@ document.addEventListener('DOMContentLoaded', function() {
     initBookingSystem();
     initMovieFilters();
     initSessionSelector();
+
+    // Дополнительные функции
+    initTooltips();
+    initAlerts();
+    initLazyLoading();
+    initSmoothScrolling();
 });
 
 // Система бронирования
 function initBookingSystem() {
+    // ЕСЛИ МЫ НА СТРАНИЦЕ БРОНИРОВАНИЯ - ВЫХОДИМ
+    if (document.getElementById('booking-form')) {
+        console.log('На странице бронирования, initBookingSystem отключен');
+        return;
+    }
+
+    // Оригинальный код только для других страниц
     const seatInput = document.getElementById('seats');
     const priceDisplay = document.getElementById('total-price');
     const pricePerSeat = parseFloat(document.getElementById('price-per-seat').value);
@@ -115,14 +128,6 @@ function formatDate(dateString) {
 }
 
 // Дополнительные функции для основного приложения
-
-// Инициализация всех компонентов при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    initTooltips();
-    initAlerts();
-    initLazyLoading();
-    initSmoothScrolling();
-});
 
 // Инициализация tooltips
 function initTooltips() {

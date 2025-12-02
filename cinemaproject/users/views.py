@@ -2,10 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
 from django.apps import apps
-from django.utils import timezone
-import datetime
 
 
 def register(request):
@@ -23,7 +20,7 @@ def register(request):
 
 @login_required
 def profile(request):
-    # Получаем модель Booking динамически
+    """Профиль пользователя с историей бронирований"""
     Booking = apps.get_model('cinema', 'Booking')
 
     # Получаем бронирования пользователя
@@ -32,7 +29,11 @@ def profile(request):
     # Считаем статистику
     total_bookings = bookings.count()
     confirmed_bookings = bookings.filter(is_confirmed=True).count()
-    total_tickets = bookings.aggregate(total=Sum('seats_count'))['total'] or 0
+
+    # Считаем общее количество билетов
+    total_tickets = 0
+    for booking in bookings:
+        total_tickets += booking.seats.count()
 
     context = {
         'bookings': bookings,
@@ -51,18 +52,26 @@ def cancel_booking(request, booking_id):
     # Получаем бронь или возвращаем 404
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
 
-    # Проверяем, можно ли отменить бронь (например, не позже чем за 1 час до сеанса)
+    # Проверяем возможность отмены (не позже чем за 2 часа до сеанса)
+    from django.utils import timezone
+    import datetime
+
     can_cancel = True
     cancellation_message = ""
 
-    if booking.session.start_time <= timezone.now() + datetime.timedelta(hours=1):
+    time_until_session = booking.session.start_time - timezone.now()
+    if time_until_session <= datetime.timedelta(hours=2):
         can_cancel = False
-        cancellation_message = "Невозможно отменить бронь менее чем за 1 час до сеанса"
+        cancellation_message = "Невозможно отменить бронь менее чем за 2 часа до сеанса"
 
     if request.method == 'POST' and can_cancel:
+        # Получаем информацию о местах перед удалением
+        seats_info = ", ".join([f"Ряд {seat.row}, Место {seat.number}" for seat in booking.seats.all()])
+        seats_count = booking.seats.count()
+
         # Удаляем бронь
         booking.delete()
-        messages.success(request, 'Бронь успешно отменена!')
+        messages.success(request, f'Бронь на {seats_count} мест ({seats_info}) успешно отменена!')
         return redirect('profile')
     elif request.method == 'POST' and not can_cancel:
         messages.error(request, cancellation_message)
